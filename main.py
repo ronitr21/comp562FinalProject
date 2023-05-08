@@ -7,19 +7,17 @@ import keras
 import math
 import numpy as np
 import pandas as pd
-import makedata as mdata
-import bracket
-import bracket_year
+import data as mdata
+import make_bracket
+import byear
 
 
 print(tf.version.VERSION)
 
 
-def makeModel(input_len, output_len):
-
+def createModel(input_len, output_len):
     C = 200
-    model = svm.SVC(kernel='rbf', probability=True)  # , verbose=True) #, max_iter=10_000)
-
+    model = svm.SVC(kernel='rbf', probability=True)
     return model
 
 
@@ -49,9 +47,8 @@ def train(model, m, training_inputs, training_outputs, testing_inputs, testing_o
     lSWinZero = []
     didWin = []
 
-    for i in range(0):  # len(training_inputs)):
+    for i in range(0):
         index = 0
-
         wTWinTen.append(training_inputs[i][index])
         index += 1
         lTWinTen.append(training_inputs[i][index])
@@ -74,7 +71,7 @@ def train(model, m, training_inputs, training_outputs, testing_inputs, testing_o
     return m, model
 
 
-def predictGame(m, model, year):
+def predGame(m, model, year):
     def predict(team1, team2):
         inputs = mdata.getInputs(m, year, team1, team2)
 
@@ -82,22 +79,19 @@ def predictGame(m, model, year):
         los = model.predict_proba(inputs)[0][0]
         prob = won / (won + los)
         return prob
-        # return (math.tanh(30*(prob-0.5))+1)/2.0
-        # return model.predict(inputs)[0][0]
-
+        
     return predict
 
 
-def convertTeamToStr(m):
+def team_to_str(m):
     def convert(teamId):
         if teamId in m.teamid_to_teamname:
             return m.teamid_to_teamname[teamId]
         return teamId + '-unknown'
-
     return convert
 
 
-def testStuff(training_inputs, training_outputs, transform):
+def testing(training_inputs, training_outputs, transform):
     correct = 0
     wrong = 0
 
@@ -118,24 +112,24 @@ if __name__ == "__main__":
     print(m)
     print(training_inputs.shape[1])
     print(training_outputs.shape[1])
-    model = makeModel(training_inputs.shape[1], training_outputs.shape[1])
+    model = createModel(training_inputs.shape[1], training_outputs.shape[1])
 
     _, model = train(model, m, training_inputs, training_outputs, test_inputs, test_outputs)
 
 
-    b = bracket.Bracket(bracket_year.the2016Bracket, predictGame(m, model, 2016), convertTeamToStr(m))
-    b.playTourne()
-    b = bracket.Bracket(bracket_year.the2018Bracket, predictGame(m, model, 2018), convertTeamToStr(m))
-    b.playTourne()
-    b = bracket.Bracket(bracket_year.the2019Bracket, predictGame(m, model, 2019), convertTeamToStr(m))
-    b.playTourne()
+    b = make_bracket.Bracket(byear.the2016Bracket, predGame(m, model, 2016), team_to_str(m))
+    b.tournament()
+    b = make_bracket.Bracket(byear.the2018Bracket, predGame(m, model, 2018), team_to_str(m))
+    b.tournament()
+    b = make_bracket.Bracket(byear.the2019Bracket, predGame(m, model, 2019), team_to_str(m))
+    b.tournament()
 
-    b = bracket.Bracket(bracket_year.the2021Bracket, predictGame(m, model, 2021), convertTeamToStr(m))
-    b.playTourne()
+    b = make_bracket.Bracket(byear.the2021Bracket, predGame(m, model, 2021), team_to_str(m))
+    b.tournament()
 
-    b = bracket.Bracket(bracket_year.the2021SecondChanceBracket, predictGame(m, model, 2021), convertTeamToStr(m))
-    b.playTourne()
+    b = make_bracket.Bracket(byear.the2021SecondChanceBracket, predGame(m, model, 2021), team_to_str(m))
+    b.tournament()
 
-    b = bracket.Bracket(bracket_year.the2022Bracket, predictGame(m, model, 2022), convertTeamToStr(m))
-    b.playTourne()
+    b = make_bracket.Bracket(byear.the2022Bracket, predGame(m, model, 2022), team_to_str(m))
+    b.tournament()
 

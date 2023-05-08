@@ -1,14 +1,12 @@
 import numpy as np
-import pagerank
+import p_rank
 import pandas as pd
 
 
-def getParam(param):
+def getParameter(param):
     def f(data, index):
         return data[param][index]
-
     return f
-
 
 class MakeData:
     def __init__(self):
@@ -57,9 +55,9 @@ class MakeData:
                 self.year_to_league_stats[year][leagueId]['indexToTeam'].append(teamId)
 
     def createInputsAndOutputs(self, data, setupFuncs, createDataFuncs,
-                               collectInputFuncs, getYear=getParam("Season"),
-                               getWTeamId=getParam("WTeamID"), getWScore=getParam("WScore"),
-                               getLTeamId=getParam("LTeamID"), getLScore=getParam("LScore")):
+                               collectInputFuncs, getYear=getParameter("Season"),
+                               getWTeamId=getParameter("WTeamID"), getWScore=getParameter("WScore"),
+                               getLTeamId=getParameter("LTeamID"), getLScore=getParameter("LScore")):
 
         for f in setupFuncs:
             f(self)
@@ -143,11 +141,11 @@ def updatePageRank(name, winsMultiplier, goalsMultiplier):
         else:
 
             wA = np.array(self.year_to_league_stats[season][wLeagueId][name])
-            wR = pagerank.rank(wA, 2)
+            wR = p_rank.rank(wA, 2)
             wRank = wR[wIndex][0]
 
             lA = np.array(self.year_to_league_stats[season][lLeagueId][name])
-            lR = pagerank.rank(lA, 2)
+            lR = p_rank.rank(lA, 2)
             lRank = lR[lIndex][0]
 
             self.year_to_stats[season][name][lLeagueIndex][wLeagueIndex] += lRank * winsMultiplier
@@ -166,17 +164,17 @@ def addPageRankToInputs(name):
           lLeagueId, lLeagueIndex, lIndex, lScore):
         # Winning team
         wA = np.array(self.year_to_league_stats[season][wLeagueId][name])
-        wR = pagerank.rank(wA, 8)
+        wR = p_rank.rank(wA, 8)
         new_input.append(wR[wIndex][0])
 
         # Losing team
         lA = np.array(self.year_to_league_stats[season][lLeagueId][name])
-        lR = pagerank.rank(lA, 8)
+        lR = p_rank.rank(lA, 8)
         new_input.append(lR[lIndex][0])
 
         # League
         A = np.array(self.year_to_stats[season][name])
-        R = pagerank.rank(A, 2)
+        R = p_rank.rank(A, 2)
         new_input.append(R[wLeagueIndex][0])
         new_input.append(R[lLeagueIndex][0])
 
